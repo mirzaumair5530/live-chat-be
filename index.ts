@@ -3,8 +3,10 @@ import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import { config } from "dotenv";
 import { rateLimit } from "express-rate-limit";
-import morgen from "morgan"
-import routes from "./routes"
+import morgen from "morgan";
+
+import routes from "./routes";
+import {setupSocket} from "./socket"
 
 config();
 
@@ -36,17 +38,19 @@ const limiter = rateLimit({
   limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
   standardHeaders: "draft-7", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-  requestPropertyName: "rateLimit"
+  requestPropertyName: "rateLimit",
 });
 app.use(limiter);
 
-
 // implement logger
-app.use(morgen("dev"))
+app.use(morgen("dev"));
 
-app.use("/", routes)
+app.use("/", routes);
 
 const port = process.env.APP_PORT || 3000;
-app.listen(port, () => {
+const server= app.listen(port, () => {
   console.log("Server is running on port", port);
 });
+
+// setting up socket io server
+setupSocket(server)
