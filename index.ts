@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { config } from "dotenv";
 import { rateLimit } from "express-rate-limit";
 import morgen from "morgan"
+import routes from "./routes"
 
 config();
 
@@ -43,9 +44,7 @@ app.use(limiter);
 // implement logger
 app.use(morgen("dev"))
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World");
-});
+app.use("/", routes)
 
 const port = process.env.APP_PORT || 3000;
 app.listen(port, () => {
