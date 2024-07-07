@@ -1,14 +1,20 @@
-import { Server } from "socket.io";
+import { Server, Socket as SocketType } from "socket.io";
 import type { Server as HttpServerType } from "http";
 
-export const setupSocket = (server: HttpServerType) => {
-  const io = new Server(server);
+export class SocketIO extends Server {
+  constructor(server: HttpServerType) {
+    super(server);
+  }
 
-  io.on("connection", (socket) => {
-    console.log(socket.id)
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected");
+  startConnection() {
+    console.log("Starting socket connection!");
+    this.on("connection", (socket: SocketType) => {
+      socket.on("message", (data) => {
+        console.log(data);
+      });
+      socket.on("disconnect", () => {
+        console.log("User disconnected");
+      });
     });
-  });
-};
+  }
+}

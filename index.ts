@@ -1,4 +1,5 @@
-import express, { Request, Response, Application } from "express";
+import express, { Application } from "express";
+import mongoose from "mongoose";
 import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import { config } from "dotenv";
@@ -6,7 +7,8 @@ import { rateLimit } from "express-rate-limit";
 import morgen from "morgan";
 
 import routes from "./routes";
-import {setupSocket} from "./socket"
+import { SocketIO } from "./socket";
+import { Authentication } from "./authentication";
 
 config();
 
@@ -45,12 +47,30 @@ app.use(limiter);
 // implement logger
 app.use(morgen("dev"));
 
+const passportAuthentication = new Authentication(app);
+
+passportAuthentication.setupLocalStratigy()
+
 app.use("/", routes);
-
 const port = process.env.APP_PORT || 3000;
-const server= app.listen(port, () => {
-  console.log("Server is running on port", port);
-});
 
-// setting up socket io server
-setupSocket(server)
+const startApp = async () => {
+  try {
+    await mongoose.connect(process.env.DB_URI as string).then(() => {
+      console.log("Connected with Database.");
+    });
+
+    const server = app.listen(port, () => {
+      console.log("Server is running on port", port);
+    });
+
+    // setting up socket io server
+    const socket = new SocketIO(server);
+
+    socket.startConnection();
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+startApp();

@@ -1,10 +1,10 @@
-import { Router } from "express"
-import chartRouter from "./chat.router"
+import { Router } from "express";
 
+import chartRouter from "./chat.router";
+import { Authentication } from "../authentication";
 
+const router = Router();
 
-const router = Router()
+router.use("/chat", Authentication.isAuthenticated, chartRouter);
 
-router.use("/chat", chartRouter)
-
-export default router
+export default router;
